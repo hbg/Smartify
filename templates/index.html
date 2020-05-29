@@ -1,0 +1,207 @@
+{% extends "base.html" %} {% block content %} {% load static %}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+{% if playlist_id %}
+
+  <div class="alert alert-success alert-dismissible fade show" role="success">
+    <strong>Congrats!</strong> Your playlist can be found at <a href="https://open.spotify.com/playlist/{{ playlist_id }}">https://open.spotify.com/playlist/{{ playlist_id }}</a>.
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+{% endif %}
+<div class="container" id="home">
+	<div id="main">
+		{% if album_page %}
+		<img src="{% static 'SmartQueue/smartify.png' %}" height="200" style="margin: 20px"/>
+            <h3 class="green-text bold">Thematically consistent albums</h3>
+            <a href="/playlist" class="green-text btn bg-ultradark" style="margin-bottom: 20px">Search by Playlist Instead</a>
+            <br/>
+            <a href="/album" class="green-text btn bg-ultradark" style="margin-bottom: 20px">Search by Album Instead</a>
+            <form action="/" method="post">
+                {% csrf_token %}
+                <div class="form-group green-text">
+                    {% csrf_token %}
+                    <label for="id-id">open.spotify.com/album/</label>
+                    {{ form }}
+                </div>
+                <button type="submit" formmethod="post" class="btn" id="listen" button="true">LISTEN</button>
+            </form>
+            {% else %}
+                
+                <script>
+                  // This player stuff is from Spotify's tutorial
+                    const hash = window.location.hash
+                    .substring(1)
+                    .split('&')
+                    .reduce(function (initial, item) {
+                      if (item) {
+                        var parts = item.split('=');
+                        initial[parts[0]] = decodeURIComponent(parts[1]);
+                      }
+                      return initial;
+                    }, {});
+                    window.location.hash = '';
+
+                    // Set token
+                    if (hash.access_token != undefined)
+                      Cookies.set('token', hash.access_token, {
+                        expires: 1/24
+                      })
+                    let _token = Cookies.get('token', false);
+
+                    const authEndpoint = 'https://accounts.spotify.com/authorize';
+
+                    // Replace with your app's client ID, redirect URI and desired scopes
+                    var active = true;
+                    const clientId = '7092e59b0876458daa2b1c1a64c6132f';
+                    const redirectUri = 'https://smartify--shadowcypher.repl.co/next';
+                    const scopes = [
+                      'streaming',
+                      'user-read-birthdate',
+                      'user-read-private',
+                      'user-modify-playback-state'
+                    ];
+                    
+
+                    // If there is no token, redirect to Spotify authorization
+                    if (!_token) {
+                      window.location = `${authEndpoint}?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes.join('%20')}&response_type=token&show_dialog=true`;
+                    }
+                    
+
+                    
+
+                    // Set up the Web Playback SDK
+
+                    window.onSpotifyPlayerAPIReady = () => {
+                      const player = new Spotify.Player({
+                        name: 'Web Playback SDK Template',
+                        getOAuthToken: cb => { cb(_token); }
+                      });
+
+                      /*
+                      player.on('initialization_error', e => console.error(e));
+                      player.on('authentication_error', e => console.error(e));
+                      player.on('account_error', e => console.error(e));
+                      player.on('playback_error', e => console.error(e));
+                      */
+                      // Playback status updates
+                      player.on('player_state_changed', state => {
+                        console.log(state)
+                        $('#current-track').attr('src', state.track_window.current_track.album.images[0].url);
+                        $('#current-track-name').text(state.track_window.current_track.name);
+                      });
+
+                      // Ready
+                      player.on('ready', data => {
+                        play(data.device_id);
+                      });
+                      player.connect();
+
+                      $("#pause").click( function() {
+                        if (active) {
+                          player.pause().then(() => {
+                            $("#pause-icon").html("play_arrow");
+                          });
+                          active = false;
+                        }
+                        else {
+                          player.resume().then(() => {
+                            $("#pause-icon").html("pause");
+                          });
+                          active = true;
+                        }
+                      });
+                    }
+
+                    function play(device_id) {
+                      $.ajax({
+                      url: "https://api.spotify.com/v1/me/player/play?device_id=" + device_id,
+                      type: "PUT",
+                      data: '{"uris": ["{% if album %}{{ song.uri }}{% else %}{{ song.track.uri }}{% endif %}"]}',
+                      beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer ' + _token );},
+                      success: function(data) { 
+                        console.log(data)
+                      }
+                      });
+                    }
+                </script>
+                {% if album %}
+                  <iframe src="https://open.spotify.com/embed/track/{{ song.id }}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+                  <h1 class="text-light">{{ song.name }}</h1>
+                  <h3 style="color: #a9a9a9">{{ song.artists.0.name }}</h3>
+                  <!--<a class="text-primary" href="{{ song.uri }}">{{ song.uri }}</a>-->
+                  <br/>
+                {% else %}
+                  <iframe src="https://open.spotify.com/embed/track/{{ song.track.id }}" width="300" height="250" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+                  <h1 class="text-light">{{ song.track.name }}</h1>
+                  <h3 style="color: #a9a9a9">{{ song.track.artists.0.name }}</h3>
+                  <!--<a class="text-primary" href="{{ song.track.uri }}">{{ song.track.uri }}</a>-->
+                  <br/>
+                {% endif %}
+                <button type="submit" onclick="location.href='/previous'" class="btn play-button" button="true">
+                  <i class="material-icons">
+                    skip_previous
+                  </i>
+                </button>
+                <button type="submit" class="btn play-button" button="true" id="pause">
+                  <i class="material-icons" id="pause-icon">
+                    pause
+                    </i>
+                </button>
+                <button type="submit" onclick="location.href='/next'" class="btn play-button" button="true">
+                  <i class="material-icons">
+                    skip_next
+                  </i>
+                </button>
+                <div class="table-responsive">
+                <table class="table table-sm table-dark">
+                  <thead class="green-text">
+                    <tr>
+                      <th scope="col" >Energy ⚡</th>
+                      <th scope="col">Valence 😃</th>
+                      <th scope="col">Danceability 🕺🏽</th>
+                      <th scope="col">Instrumentalness 🎵</th>
+                      <th scope="col">Speechiness 💬</th>
+                      <th scope="col">Key 🎹</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">{{ energy }}</th>
+                      <td>{{ valence }}</td>
+                      <td>{{ danceability }}</td>
+                      <td>{{ instrumentalness }}</td>
+                      <td>{{ speechiness }}</td>
+                      <td>{{ key }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                </div>
+                <h3 class="green-text">Deviation: <span class="{% if deviation <= 0.5 %} green-text {% elif deviation <= 0.75 %} yellow-text {% else %} red-text {% endif %}">{{ deviation }}</span></h3>
+                <button type="submit" onclick="location.href='https://accounts.spotify.com/authorize?client_id=7092e59b0876458daa2b1c1a64c6132f&response_type=code&redirect_uri=https%3A%2F%2Fsmartify--shadowcypher.repl.co%2Fcreate_playlist&scope=playlist-modify-public%20playlist-modify-private'" class="btn btn-primary round" button="true" >CREATE PLAYLIST</button>
+              
+                <button type="button" class="btn btn-primary round" button="true" data-toggle="collapse" data-target="#queue" aria-expanded="false" aria-controls="queue">VIEW QUEUE</button>
+                <div class="collapse" id="queue">
+                  {% for item in queue %}
+                  <div class="card card-body bg-ultradark">
+                    <h5 class="card-title green-text">
+                      {% if album %}{{item.name}}{% else %} {{item.track.name}} {% endif %}
+                    </h5>
+                    <h6 class="card-subtitle green-text">{% if album %}{{item.artists.0.name}}{% else %} {{item.track.artists.0.name}} {% endif %}</h5>
+                  </div>
+                  {% endfor %}
+                </div>
+                <h4 class="green-text" id="lyrics">
+                  {% for line in lyrics %}
+                    <br/>
+                    <br/>
+                    {{ line }}
+                  {% endfor %}
+                </p>
+            {% endif %}
+        </div>
+        {% endblock %}

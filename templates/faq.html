@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container green-text">
+    <h1>What is Smartify?</h1>
+    <p>Smartify is a smart album queue generator. Avoiding all the jargon in that previous statement, Smartify essentially provides you with the most tentative and eased transitions within an album. By preparing each song in an order of similarity, Song 1 will always be the most similar to Song 2, and Song 2 will be most similar to Song 3, etc. This "similarity" comparison is conducted by calculating the standard deviation between the features of the current track to each of the other tracks in the album.</p>
+    <h1>What do you mean by features?</h1>
+    <p>The "features" that Smartify detects include: "danceability", "energy", "key", "speechiness", "valence", "instrumentalness." All of these features are rated on a scale of 0.0 to 1.0, so it's tentative that each feature has an equal weightage.</p>
+    <h1>Danceability?</h1>
+    <p>Yep, how "hype" the song is, in the sense of the word. This feature is computed by taking the "tempo, rhythm stability, beat strength, and regularity" into account (Spotify API). If you test out Drake's Scorpion, you'll see that a lot of the songs have high danceability - especially "In My Feelings."</p>
+    <h1>Energy?</h1>
+    <p>The energy of a song is determined by seeing how dynamic, active, and loud the track can be. Listening to Elton John, for example, may not be too high energy, whereas a song by Travis Scott probably is.</p>
+    <h1>What's Speechiness?</h1>
+    <p>Speechiness is the calculation of how wordy the song is - where Rap God would have a speechiness level close to 1.0, a track from Return of the Jedi that has no words would have a speechiness level close to 0.</p>
+</div>
+{% endblock %}

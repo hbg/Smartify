@@ -1,0 +1,18 @@
+{% extends "base.html" %} {% block content %} {% load static %}
+<div class="container" id="home">
+	<div id="main">
+		<img src="{% static 'SmartQueue/smartify.png' %}" height="200" style="margin: 20px"/>
+              <h3 class="green-text bold">Thematically consistent albums</h3>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group green-text">
+                    {% csrf_token %}
+                    <label for="id-id">{{ type }} Name</label>
+                    {{ form }}
+                </div>
+
+                <button type="submit" formmethod="post" class="btn btn-primary" id="listen" button="true">SEARCH</button>
+            </form>
+        </div>
+        {% endblock %}

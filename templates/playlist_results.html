@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container green-text">  
+  {% for result in results %}
+        <div class="card bg-dark">
+          <div class="card-body bg-dark">
+            <h5 class="card-title">{{ result.name }}</h5>
+            <p class="card-text">
+              {% for artist in result.artists %}
+              {{ artist }}
+              {% endfor %}
+            </p>
+            <button type="submit" onclick="location.href='/playlist/{{ result.id }}'" class="btn btn-primary round" button="true">LISTEN</button>
+          </div>
+        </div>
+  {% endfor %}
+</div>
+{% endblock %}
