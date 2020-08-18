@@ -1,9 +1,10 @@
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '33el*v@@)zi57r_q_1nrjta^tq6n&8hw(v1w(=)aiw#oe1p9dz'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = True
 
@@ -81,5 +82,7 @@ STATICFILES_DIRS = (
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 CSRF_COOKIE_SECURE = False
